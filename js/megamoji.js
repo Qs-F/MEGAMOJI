@@ -102,11 +102,25 @@ function shrinkCanvas(source) {
     }
   }
 
-  return cropCanvas(source, left, top, (right - left + 1) || 1, (bottom - top + 1) || 1);
+  return cropCanvas(
+    source,
+    left,
+    top,
+    right - left + 1 || 1,
+    bottom - top + 1 || 1
+  );
 }
 
 /* Split canvas into a 2d-array of canvases */
-function cutoutCanvasIntoCells(source, offsetH, offsetV, hCells, vCells, cellWidth, cellHeight) {
+function cutoutCanvasIntoCells(
+  source,
+  offsetH,
+  offsetV,
+  hCells,
+  vCells,
+  cellWidth,
+  cellHeight
+) {
   const cells = [];
   for (let y = 0; y < vCells; y += 1) {
     const row = [];
@@ -114,9 +128,11 @@ function cutoutCanvasIntoCells(source, offsetH, offsetV, hCells, vCells, cellWid
       row.push(
         cropCanvas(
           source,
-          offsetH + x * cellWidth, offsetV + y * cellHeight,
-          cellWidth, cellHeight,
-        ),
+          offsetH + x * cellWidth,
+          offsetV + y * cellHeight,
+          cellWidth,
+          cellHeight
+        )
       );
     }
     cells.push(row);
@@ -166,13 +182,20 @@ function urlToImg(url, cb) {
 function dataurlSize(str) {
   const ix = str.indexOf(",");
   if (ix < 0) return 0;
-  return Math.ceil((str.length - ix - 1) / 4.0 * 3);
+  return Math.ceil(((str.length - ix - 1) / 4.0) * 3);
 }
 
 /* ---- TEXT IMAGE GENERATOR */
 
 /* Create a new canvas and render a single-line text. Returns the cropped canvas object. */
-function makeTextImageSingleLine(line, color, font, fontHeight, outlineColors, gradient) {
+function makeTextImageSingleLine(
+  line,
+  color,
+  font,
+  fontHeight,
+  outlineColors,
+  gradient
+) {
   const canvas = document.createElement("canvas");
   canvas.width = fontHeight * (line.length || 1) * 2;
   canvas.height = fontHeight * 2;
@@ -202,15 +225,33 @@ function makeTextImageSingleLine(line, color, font, fontHeight, outlineColors, g
 }
 
 /* Create an image from a (possibly) multi-line text and return as a BlobURL. */
-function makeTextImage(text, color, font, fontHeight, align, lineSpacing, outlineColors, gradient) {
-  const images = text.split("\n").map((line) => (
-    makeTextImageSingleLine(line, color, font, fontHeight, outlineColors, gradient)
-  ));
+function makeTextImage(
+  text,
+  color,
+  font,
+  fontHeight,
+  align,
+  lineSpacing,
+  outlineColors,
+  gradient
+) {
+  const images = text
+    .split("\n")
+    .map((line) =>
+      makeTextImageSingleLine(
+        line,
+        color,
+        font,
+        fontHeight,
+        outlineColors,
+        gradient
+      )
+    );
   const lineWidths = images.map((canvas) => canvas.width);
   const maxWidth = Math.max.apply(null, lineWidths);
-  const totalHeight = lineSpacing * (images.length - 1) + images.reduce((l, r) => (
-    l + r.height
-  ), 0);
+  const totalHeight =
+    lineSpacing * (images.length - 1) +
+    images.reduce((l, r) => l + r.height, 0);
 
   const canvas = document.createElement("canvas");
   canvas.width = maxWidth;
@@ -245,10 +286,22 @@ const webglEnabled = webglInitialize();
 
 function renderFrameUncut(
   keyframe,
-  image, offsetH, offsetV, width, height, targetWidth, targetHeight, noCrop,
-  animation, animationInvert, effects, webglEffects, postEffects,
-  framerate, framecount,
-  fillStyle,
+  image,
+  offsetH,
+  offsetV,
+  width,
+  height,
+  targetWidth,
+  targetHeight,
+  noCrop,
+  animation,
+  animationInvert,
+  effects,
+  webglEffects,
+  postEffects,
+  framerate,
+  framecount,
+  fillStyle
 ) {
   let canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -264,17 +317,30 @@ function renderFrameUncut(
   if (animation) {
     animation(
       keyframe,
-      ctx, image, offsetH, offsetV, width, height, targetWidth * 2, targetHeight * 2,
+      ctx,
+      image,
+      offsetH,
+      offsetV,
+      width,
+      height,
+      targetWidth * 2,
+      targetHeight * 2
     );
   } else {
     const left = offsetH - width / 2;
     const top = offsetV - height / 2;
-    const targetLeft = left >= 0 ? 0 : -left * targetWidth / width;
-    const targetTop = top >= 0 ? 0 : -top * targetHeight / height;
+    const targetLeft = left >= 0 ? 0 : (-left * targetWidth) / width;
+    const targetTop = top >= 0 ? 0 : (-top * targetHeight) / height;
     ctx.drawImage(
       image,
-      Math.max(0, left), Math.max(0, top), width * 2, height * 2,
-      targetLeft, targetTop, targetWidth * 2, targetHeight * 2,
+      Math.max(0, left),
+      Math.max(0, top),
+      width * 2,
+      height * 2,
+      targetLeft,
+      targetTop,
+      targetWidth * 2,
+      targetHeight * 2
     );
   }
 
@@ -289,12 +355,22 @@ function renderFrameUncut(
 
   if (noCrop) {
     // copy webglCanvas content with background
-    return cropCanvas(canvas, 0, 0, targetWidth * 2, targetHeight * 2, fillStyle);
+    return cropCanvas(
+      canvas,
+      0,
+      0,
+      targetWidth * 2,
+      targetHeight * 2,
+      fillStyle
+    );
   } else {
     return cropCanvas(
       canvas,
-      targetWidth / 2, targetHeight / 2, targetWidth, targetHeight,
-      fillStyle,
+      targetWidth / 2,
+      targetHeight / 2,
+      targetWidth,
+      targetHeight,
+      fillStyle
     );
   }
 }
@@ -304,26 +380,66 @@ function renderFrameUncut(
  * each images may exceed binarySizeLimit.
  */
 function renderAllCellsFixedSize(
-  image, offsetH, offsetV, hCells, vCells, cellWidth, cellHeight, targetSize, noCrop,
-  animated, animation, animationInvert, effects, webglEffects, postEffects,
-  framerate, framecount,
-  backgroundColor, transparent,
+  image,
+  offsetH,
+  offsetV,
+  hCells,
+  vCells,
+  cellWidth,
+  cellHeight,
+  targetSize,
+  noCrop,
+  animated,
+  animation,
+  animationInvert,
+  effects,
+  webglEffects,
+  postEffects,
+  framerate,
+  framecount,
+  backgroundColor,
+  transparent
 ) {
   let cells = [];
   if (!animated) {
     const img = renderFrameUncut(
-      0, image,
-      offsetH, offsetV, cellWidth * hCells, cellHeight * vCells,
-      targetSize * hCells, targetSize * vCells, noCrop,
-      animation, animationInvert, effects, webglEffects, postEffects,
-      framerate, framecount,
-      transparent ? "rgba(0, 0, 0, 0)" : backgroundColor,
+      0,
+      image,
+      offsetH,
+      offsetV,
+      cellWidth * hCells,
+      cellHeight * vCells,
+      targetSize * hCells,
+      targetSize * vCells,
+      noCrop,
+      animation,
+      animationInvert,
+      effects,
+      webglEffects,
+      postEffects,
+      framerate,
+      framecount,
+      transparent ? "rgba(0, 0, 0, 0)" : backgroundColor
     );
-    cells = noCrop ? (
-      cutoutCanvasIntoCells(img, 0, 0, hCells, vCells, targetSize * 2, targetSize * 2)
-    ) : (
-      cutoutCanvasIntoCells(img, 0, 0, hCells, vCells, targetSize, targetSize)
-    );
+    cells = noCrop
+      ? cutoutCanvasIntoCells(
+          img,
+          0,
+          0,
+          hCells,
+          vCells,
+          targetSize * 2,
+          targetSize * 2
+        )
+      : cutoutCanvasIntoCells(
+          img,
+          0,
+          0,
+          hCells,
+          vCells,
+          targetSize,
+          targetSize
+        );
     return cells.map((row) => row.map((cell) => cell.toDataURL()));
   } else {
     /* instantiate GIF encoders for each cells */
@@ -340,56 +456,113 @@ function renderAllCellsFixedSize(
       cells.push(row);
     }
     for (let i = 0; i < framecount; i += 1) {
-      const keyframe = animationInvert ? 1 - (i / framecount) : i / framecount;
+      const keyframe = animationInvert ? 1 - i / framecount : i / framecount;
       const frame = renderFrameUncut(
-        keyframe, image,
-        offsetH, offsetV, cellWidth * hCells, cellHeight * vCells,
-        targetSize * hCells, targetSize * vCells, noCrop,
-        animation, animationInvert, effects, webglEffects, postEffects,
-        framerate, framecount,
-        transparent ? "#ffffff" : backgroundColor,
+        keyframe,
+        image,
+        offsetH,
+        offsetV,
+        cellWidth * hCells,
+        cellHeight * vCells,
+        targetSize * hCells,
+        targetSize * vCells,
+        noCrop,
+        animation,
+        animationInvert,
+        effects,
+        webglEffects,
+        postEffects,
+        framerate,
+        framecount,
+        transparent ? "#ffffff" : backgroundColor
       );
-      const imgCells = noCrop ? (
-        cutoutCanvasIntoCells(frame, 0, 0, hCells, vCells, targetSize * 2, targetSize * 2)
-      ) : (
-        cutoutCanvasIntoCells(frame, 0, 0, hCells, vCells, targetSize, targetSize)
-      );
+      const imgCells = noCrop
+        ? cutoutCanvasIntoCells(
+            frame,
+            0,
+            0,
+            hCells,
+            vCells,
+            targetSize * 2,
+            targetSize * 2
+          )
+        : cutoutCanvasIntoCells(
+            frame,
+            0,
+            0,
+            hCells,
+            vCells,
+            targetSize,
+            targetSize
+          );
       for (let y = 0; y < vCells; y += 1) {
         for (let x = 0; x < hCells; x += 1) {
           cells[y][x].addFrame(imgCells[y][x].getContext("2d"));
         }
       }
     }
-    return cells.map((row) => row.map((cell) => {
-      cell.finish();
-      return `data:image/gif;base64,${encode64(cell.stream().getData())}`;
-    }));
+    return cells.map((row) =>
+      row.map((cell) => {
+        cell.finish();
+        return `data:image/gif;base64,${encode64(cell.stream().getData())}`;
+      })
+    );
   }
 }
 
 /* returns a 2d-array of (possibly animated) images. */
 function renderAllCells(
-  image, offsetH, offsetV, hCells, vCells, cellWidth, cellHeight, maxSize, noCrop,
-  animated, animation, animationInvert, effects, webglEffects, postEffects,
-  framerate, framecount,
-  backgroundColor, transparent,
-  binarySizeLimit,
+  image,
+  offsetH,
+  offsetV,
+  hCells,
+  vCells,
+  cellWidth,
+  cellHeight,
+  maxSize,
+  noCrop,
+  animated,
+  animation,
+  animationInvert,
+  effects,
+  webglEffects,
+  postEffects,
+  framerate,
+  framecount,
+  backgroundColor,
+  transparent,
+  binarySizeLimit
 ) {
   let targetSize = maxSize;
   for (;;) {
     const ret = renderAllCellsFixedSize(
-      image, offsetH, offsetV, hCells, vCells, cellWidth, cellHeight, targetSize, noCrop,
-      animated, animation, animationInvert, effects, webglEffects, postEffects,
-      framerate, framecount,
-      backgroundColor, transparent,
+      image,
+      offsetH,
+      offsetV,
+      hCells,
+      vCells,
+      cellWidth,
+      cellHeight,
+      targetSize,
+      noCrop,
+      animated,
+      animation,
+      animationInvert,
+      effects,
+      webglEffects,
+      postEffects,
+      framerate,
+      framecount,
+      backgroundColor,
+      transparent
     );
     /**
      * If a cell exceeds the limitation, retry with smaller targetSize.
      * This does not happen in most cases.
      */
-    const shouldRetry = ret.some((row) => row.some((cell) => (
-      dataurlSize(cell) >= binarySizeLimit
-    )));
+    const shouldRetry = ret.some((row) =>
+      row.some((cell) => dataurlSize(cell) >= binarySizeLimit)
+    );
     if (shouldRetry) {
       targetSize = Math.floor(targetSize * 0.9);
     } else {
@@ -400,7 +573,11 @@ function renderAllCells(
 
 const data = {
   baseImage: null,
-  resultImages: [["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAB0UlEQVR4Xu3UAQ0AAAyDsM+/6QspcwAh2zXawGj64K8A8AgKoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7gALADeD4PUAB4AZw/B6gAHADOH4PUAC4ARy/BygA3ACO3wMUAG4Ax+8BCgA3gOP3AAWAG8Dxe4ACwA3g+D1AAeAGcPweoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7gALADeD4PUAB4AZw/B6gAHADOH4PUAC4ARy/BygA3ACO3wMUAG4Ax+8BCgA3gOP3AAWAG8Dxe4ACwA3g+D1AAeAGcPweoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7ADyAB6SPAIFm19U7AAAAAElFTkSuQmCC"]],
+  resultImages: [
+    [
+      "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAB0UlEQVR4Xu3UAQ0AAAyDsM+/6QspcwAh2zXawGj64K8A8AgKoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7gALADeD4PUAB4AZw/B6gAHADOH4PUAC4ARy/BygA3ACO3wMUAG4Ax+8BCgA3gOP3AAWAG8Dxe4ACwA3g+D1AAeAGcPweoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7gALADeD4PUAB4AZw/B6gAHADOH4PUAC4ARy/BygA3ACO3wMUAG4Ax+8BCgA3gOP3AAWAG8Dxe4ACwA3g+D1AAeAGcPweoABwAzh+D1AAuAEcvwcoANwAjt8DFABuAMfvAQoAN4Dj9wAFgBvA8XuAAsAN4Pg9QAHgBnD8HqAAcAM4fg9QALgBHL8HKADcAI7fAxQAbgDH7wEKADeA4/cABYAbwPF7ADyAB6SPAIFm19U7AAAAAElFTkSuQmCC",
+    ],
+  ],
   previewMode: false,
   /* ui */
   ui: {
@@ -500,17 +677,15 @@ const watch = {
 const computed = {
   outlineColors() {
     const { color } = this.source.text;
-    return this.source.text.outlines.map((outline) => (
-      outline === "lighter" ? (
-        lighterColor(color)
-      ) : outline === "darker" ? (
-        darkerColor(color)
-      ) : outline === "identical" ? (
-        color
-      ) : (
-        outline
-      )
-    ));
+    return this.source.text.outlines.map((outline) =>
+      outline === "lighter"
+        ? lighterColor(color)
+        : outline === "darker"
+        ? darkerColor(color)
+        : outline === "identical"
+        ? color
+        : outline
+    );
   },
 };
 
@@ -539,23 +714,31 @@ const methods = {
         EMOJI_SIZE,
         this.source.text.align,
         this.source.text.lineSpacing * EMOJI_SIZE,
-        this.outlineColors, this.source.text.gradient,
+        this.outlineColors,
+        this.source.text.gradient
       );
-      urlToImg(blobUrl, (img) => { this.baseImage = img; });
-    }
-  },
-  renderFukumoji() {
-    mergeImages(128, 128, [
-      this.source.fukumoji.base,
-      this.source.fukumoji.textures,
-      this.source.fukumoji.mouths,
-      this.source.fukumoji.eyes,
-      this.source.fukumoji.others,
-    ], (blobUrl) => {
       urlToImg(blobUrl, (img) => {
         this.baseImage = img;
       });
-    });
+    }
+  },
+  renderFukumoji() {
+    mergeImages(
+      128,
+      128,
+      [
+        this.source.fukumoji.base,
+        this.source.fukumoji.textures,
+        this.source.fukumoji.mouths,
+        this.source.fukumoji.eyes,
+        this.source.fukumoji.others,
+      ],
+      (blobUrl) => {
+        urlToImg(blobUrl, (img) => {
+          this.baseImage = img;
+        });
+      }
+    );
   },
   initializeGradient() {
     this.source.text.gradient = [
@@ -598,12 +781,17 @@ const methods = {
 
     this.target.hZoom = `${widthRatio}`;
     this.target.vZoom = `${heightRatio}`;
-    this.target.offsetLeft = `${(image.naturalWidth - EMOJI_SIZE / widthRatio * h) / 2}`;
-    this.target.offsetTop = `${Math.min(0, (image.naturalHeight - EMOJI_SIZE / heightRatio * v) / 2)}`;
+    this.target.offsetLeft = `${
+      (image.naturalWidth - (EMOJI_SIZE / widthRatio) * h) / 2
+    }`;
+    this.target.offsetTop = `${Math.min(
+      0,
+      (image.naturalHeight - (EMOJI_SIZE / heightRatio) * v) / 2
+    )}`;
   },
   onSetShowTarget(value) {
     this.ui.showTargetPanel = value;
-    ga("send", "pageview", value ? "/target" : (`/${this.ui.mode}`));
+    ga("send", "pageview", value ? "/target" : `/${this.ui.mode}`);
   },
   onSelectMode(value) {
     this.ui.mode = value;
@@ -649,30 +837,43 @@ const methods = {
 
     ga("send", "event", this.ui.mode, "render");
 
-    const animated = (
-      this.target.animation
-      || this.target.effects.length
-      || this.target.webglEffects.length
-      || this.target.postEffects.length
-    );
+    const animated =
+      this.target.animation ||
+      this.target.effects.length ||
+      this.target.webglEffects.length ||
+      this.target.postEffects.length;
     const maxSize = animated ? ANIMATED_EMOJI_SIZE : EMOJI_SIZE;
     this.resultImages = renderAllCells(
       this.baseImage,
-      offsetLeft, offsetTop,
-      this.target.hCells || 1, this.target.vCells || 1, cellWidth, cellHeight,
-      maxSize, this.target.noCrop,
-      animated, this.target.animation, this.target.animationInvert,
+      offsetLeft,
+      offsetTop,
+      this.target.hCells || 1,
+      this.target.vCells || 1,
+      cellWidth,
+      cellHeight,
+      maxSize,
+      this.target.noCrop,
+      animated,
+      this.target.animation,
+      this.target.animationInvert,
       this.target.effects.concat(this.target.staticEffects),
       this.target.webglEffects.map((name) => window[name]),
       this.target.postEffects,
-      this.target.framerate, this.target.framecount,
-      this.target.backgroundColor, this.target.transparent, BINARY_SIZE_LIMIT,
+      this.target.framerate,
+      this.target.framecount,
+      this.target.backgroundColor,
+      this.target.transparent,
+      BINARY_SIZE_LIMIT
     );
   },
 };
 
 const vm = new Vue({
-  el: "#app", data, methods, watch, computed,
+  el: "#app",
+  data,
+  methods,
+  watch,
+  computed,
 });
 
 window.onerror = (msg, file, line, col) => {
