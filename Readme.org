@@ -1,4 +1,4 @@
-# WARNING: このRepositoryでForkしたものはURLからevalできる機能を含んでいます．危険なため，必ず元リポジトリのものを使うようにしてください．
+* WARNING: このRepositoryでForkしたものはURLからevalできる機能を含んでいます．危険なため，必ず元リポジトリのものを使うようにしてください．
 
 http://zk-phi.github.io/MEGAMOJI
 
