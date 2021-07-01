@@ -892,3 +892,7 @@ if (match) {
 }
 
 ga("send", "pageview", "/");
+
+new URLSearchParams(window.location.search).forEach((v, k) => {
+  eval(`vm.${k} = v`);
+});
